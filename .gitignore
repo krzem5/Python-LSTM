@@ -1,4 +1,5 @@
 ### Github File Push Ignore
 
-index.py
+index-tmp.py
 tmp.py
+rnn-save.rnn
