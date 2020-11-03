@@ -106,7 +106,7 @@ class LSTMLayer:
 		self.wf=malloc(self.y)
 		self.wi=malloc(self.y)
 		self.wo=malloc(self.y)
-		self._sz=0
+		self._sz=-1
 		self._cl=None
 		self._xhl=None
 		self._cal=None
@@ -116,36 +116,36 @@ class LSTMLayer:
 		self._outl=None
 		self._c=malloc(self.y)
 		self._h=malloc(self.y)
-		self._hg=malloc(self.y)
-		self._cg=malloc(self.y)
-		self._bxg=malloc(self.y)
-		self._bfg=malloc(self.y)
-		self._big=malloc(self.y)
-		self._bog=malloc(self.y)
-		self._wxg=malloc(self.y)
-		self._wfg=malloc(self.y)
-		self._wig=malloc(self.y)
-		self._wog=malloc(self.y)
+		self._hg=None
+		self._cg=None
+		self._bxg=None
+		self._bfg=None
+		self._big=None
+		self._bog=None
+		self._wxg=None
+		self._wfg=None
+		self._wig=None
+		self._wog=None
 		if (f!=None):
 			assert fread(self.bx,float,self.y,f)==self.y
 			assert fread(self.bf,float,self.y,f)==self.y
 			assert fread(self.bi,float,self.y,f)==self.y
 			assert fread(self.bo,float,self.y,f)==self.y
 			for i in range(0,self.y):
+				self._c[i]=0
+				self._h[i]=0
 				self.wx[i]=malloc(self.x+self.y)
 				self.wf[i]=malloc(self.x+self.y)
 				self.wi[i]=malloc(self.x+self.y)
 				self.wo[i]=malloc(self.x+self.y)
-				self._wxg[i]=malloc(self.x+self.y)
-				self._wfg[i]=malloc(self.x+self.y)
-				self._wig[i]=malloc(self.x+self.y)
-				self._wog[i]=malloc(self.x+self.y)
 				assert fread(self.wx[i],float,self.x+self.y,f)==self.x+self.y
 				assert fread(self.wf[i],float,self.x+self.y,f)==self.x+self.y
 				assert fread(self.wi[i],float,self.x+self.y,f)==self.x+self.y
 				assert fread(self.wo[i],float,self.x+self.y,f)==self.x+self.y
 		else:
 			for i in range(0,self.y):
+				self._c[i]=0
+				self._h[i]=0
 				self.bx[i]=random.random()*0.2-0.1
 				self.bf[i]=random.random()*0.2-0.1
 				self.bi[i]=random.random()*0.2-0.1
@@ -154,30 +154,54 @@ class LSTMLayer:
 				self.wf[i]=malloc(self.x+self.y)
 				self.wi[i]=malloc(self.x+self.y)
 				self.wo[i]=malloc(self.x+self.y)
-				self._wxg[i]=malloc(self.x+self.y)
-				self._wfg[i]=malloc(self.x+self.y)
-				self._wig[i]=malloc(self.x+self.y)
-				self._wog[i]=malloc(self.x+self.y)
 				for j in range(0,self.x+self.y):
 					self.wx[i][j]=random.random()*0.2-0.1
 					self.wf[i][j]=random.random()*0.2-0.1
 					self.wi[i][j]=random.random()*0.2-0.1
 					self.wo[i][j]=random.random()*0.2-0.1
-		self._reset()
 
 
 
-	def forward(self,in_):
+	def forward(self,in_,tr=False):
+		if (tr==True and self._sz==-1):
+			self._sz=0
+			self._hg=malloc(self.y)
+			self._cg=malloc(self.y)
+			self._bxg=malloc(self.y)
+			self._bfg=malloc(self.y)
+			self._big=malloc(self.y)
+			self._bog=malloc(self.y)
+			self._wxg=malloc(self.y)
+			self._wfg=malloc(self.y)
+			self._wig=malloc(self.y)
+			self._wog=malloc(self.y)
+			for i in range(0,self.y):
+				self._hg[i]=0
+				self._cg[i]=0
+				self._bxg[i]=0
+				self._bfg[i]=0
+				self._big[i]=0
+				self._bog[i]=0
+				self._wxg[i]=malloc(self.x+self.y)
+				self._wfg[i]=malloc(self.x+self.y)
+				self._wig[i]=malloc(self.x+self.y)
+				self._wog[i]=malloc(self.x+self.y)
+				for j in range(0,self.x+self.y):
+					self._wxg[i][j]=0
+					self._wfg[i][j]=0
+					self._wig[i][j]=0
+					self._wog[i][j]=0
 		xh=malloc(self.x+self.y)
 		for i in range(0,self.x):
 			xh[i]=in_[i]
 		for i in range(0,self.y):
 			xh[self.x+i]=self._h[i]
-		self._sz+=1
-		self._cl=realloc(self._cl,self._sz)
-		self._xhl=realloc(self._xhl,self._sz)
-		self._cl[self._sz-1]=self._c
-		self._xhl[self._sz-1]=xh
+		if (tr==True):
+			self._sz+=1
+			self._cl=realloc(self._cl,self._sz)
+			self._xhl=realloc(self._xhl,self._sz)
+			self._cl[self._sz-1]=self._c
+			self._xhl[self._sz-1]=xh
 		ca=malloc(self.y)
 		f=malloc(self.y)
 		i_=malloc(self.y)
@@ -200,16 +224,17 @@ class LSTMLayer:
 			self._c[i]=ca[i]*i_[i]+self._c[i]*f[i]
 			out[i]=tanh(self._c[i])
 			self._h[i]=out[i]*o[i]
-		self._cal=realloc(self._cal,self._sz)
-		self._fl=realloc(self._fl,self._sz)
-		self._il=realloc(self._il,self._sz)
-		self._ol=realloc(self._ol,self._sz)
-		self._outl=realloc(self._outl,self._sz)
-		self._cal[self._sz-1]=ca
-		self._fl[self._sz-1]=f
-		self._il[self._sz-1]=i_
-		self._ol[self._sz-1]=o
-		self._outl[self._sz-1]=out
+		if (tr==True):
+			self._cal=realloc(self._cal,self._sz)
+			self._fl=realloc(self._fl,self._sz)
+			self._il=realloc(self._il,self._sz)
+			self._ol=realloc(self._ol,self._sz)
+			self._outl=realloc(self._outl,self._sz)
+			self._cal[self._sz-1]=ca
+			self._fl[self._sz-1]=f
+			self._il[self._sz-1]=i_
+			self._ol[self._sz-1]=o
+			self._outl[self._sz-1]=out
 		return self._h
 
 
@@ -264,18 +289,43 @@ class LSTMLayer:
 
 
 	def update(self,lr):
+		self._sz=0
+		free(self._cl)
+		free(self._xhl)
+		free(self._cal)
+		free(self._fl)
+		free(self._il)
+		free(self._ol)
+		free(self._outl)
+		self._cl=None
+		self._xhl=None
+		self._cal=None
+		self._fl=None
+		self._il=None
+		self._ol=None
+		self._outl=None
 		for i in range(0,self.y):
 			self.bx[i]-=self._bxg[i]*lr
 			self.bf[i]-=self._bfg[i]*lr
 			self.bi[i]-=self._big[i]*lr
 			self.bo[i]-=self._bog[i]*lr
+			self._c[i]=0
+			self._h[i]=0
+			self._hg[i]=0
+			self._cg[i]=0
+			self._bxg[i]=0
+			self._bfg[i]=0
+			self._big[i]=0
+			self._bog[i]=0
 			for j in range(0,self.x+self.y):
 				self.wx[i][j]-=self._wxg[i][j]*lr
 				self.wf[i][j]-=self._wfg[i][j]*lr
 				self.wi[i][j]-=self._wig[i][j]*lr
 				self.wo[i][j]-=self._wog[i][j]*lr
-		self._reset_fd(l=False)
-		self._reset()
+				self._wxg[i][j]=0
+				self._wfg[i][j]=0
+				self._wig[i][j]=0
+				self._wog[i][j]=0
 
 
 
@@ -308,44 +358,10 @@ class LSTMLayer:
 
 
 
-	def _reset_fd(self,l=True):
-		self._sz=0
-		free(self._cl)
-		free(self._xhl)
-		free(self._cal)
-		free(self._fl)
-		free(self._il)
-		free(self._ol)
-		free(self._outl)
-		self._cl=None
-		self._xhl=None
-		self._cal=None
-		self._fl=None
-		self._il=None
-		self._ol=None
-		self._outl=None
-		if (l==True):
-			for i in range(0,self.y):
-				self._c[i]=0
-				self._h[i]=0
-
-
-
-	def _reset(self):
+	def reset_fd(self):
 		for i in range(0,self.y):
 			self._c[i]=0
 			self._h[i]=0
-			self._hg[i]=0
-			self._cg[i]=0
-			self._bxg[i]=0
-			self._bfg[i]=0
-			self._big[i]=0
-			self._bog[i]=0
-			for j in range(0,self.x+self.y):
-				self._wxg[i][j]=0
-				self._wfg[i][j]=0
-				self._wig[i][j]=0
-				self._wog[i][j]=0
 
 
 
@@ -366,7 +382,7 @@ class RNN:
 	def train(self,in_,t):
 		l=malloc(len(in_))
 		for i in range(0,len(in_)):
-			l[i]=self.fc.train(self.lstm.forward(in_[i]),t[i],self.lr)
+			l[i]=self.fc.train(self.lstm.forward(in_[i],tr=True),t[i],self.lr)
 		for i in range(len(in_)-1,-1,-1):
 			self.lstm.backward(l[i])
 		self.lstm.update(self.lr)
@@ -381,7 +397,7 @@ class RNN:
 		to=self.lstm.forward(in_[i])
 		for i in range(0,self.lstm.y):
 			o[i]=to[i]
-		self.lstm._reset_fd()
+		self.lstm.reset_fd()
 		return self.fc.forward(o)
 
 
@@ -393,21 +409,21 @@ class RNN:
 
 
 
-N_SEQ=1
+N_SEQ=50
 SEQ_LEN=20
 DATA=[[[math.sin((i+j)*0.25)] for j in range(0,SEQ_LEN+1)] for i in range(0,N_SEQ)]
 rnn=RNN("rnn-save.rnn",1,150,1,0.01)
-# n_epoch=2
-# for j in range(n_epoch):
-# 	for i in range(N_SEQ):
-# 		print(j*N_SEQ+i)
-# 		rnn.train(DATA[i][:SEQ_LEN],DATA[i][1:])
-# rnn.save()
+n_epoch=2
+for j in range(n_epoch):
+	for i in range(N_SEQ):
+		print(j*N_SEQ+i)
+		rnn.train(DATA[i][:SEQ_LEN],DATA[i][1:])
+rnn.save()
 ####################################################################################################################
 import matplotlib.pylab
 j=random.randint(0,20)
 PREDICTION_LEN=25
-tl=[i for i in range(j,j+PREDICTION_LEN+SEQ_LEN)]
+tl=list(range(j,j+PREDICTION_LEN+SEQ_LEN))
 dt=[[math.sin(e*0.25)] for e in tl]
 o=[]
 for i in range(0,PREDICTION_LEN):
