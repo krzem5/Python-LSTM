@@ -47,12 +47,11 @@ class FullyConnectedLayer:
 				self.w[i]=malloc(self.x)
 				assert fread(self.w[i],float,self.x,f)==self.x
 		else:
-			s=1#math.sqrt(2/(x*y))
 			for i in range(0,self.y):
 				self.b[i]=0
 				self.w[i]=malloc(self.x)
 				for j in range(0,self.x):
-					self.w[i][j]=(random.random()*2-1)*s
+					self.w[i][j]=random.random()*2-1
 
 
 
