@@ -408,11 +408,11 @@ class RNN:
 
 
 
-N_SEQ=50
+N_SEQ=200
 SEQ_LEN=20
 DATA=[[[math.sin((i+j)*0.25)] for j in range(0,SEQ_LEN+1)] for i in range(0,N_SEQ)]
-rnn=RNN("rnn-save.rnn",1,150,1,0.01)
-n_epoch=2
+rnn=RNN("rnn-save.rnn",1,25,1,0.01)
+n_epoch=20
 for j in range(n_epoch):
 	for i in range(N_SEQ):
 		print(j*N_SEQ+i)
@@ -420,7 +420,7 @@ for j in range(n_epoch):
 rnn.save()
 ####################################################################################################################
 import matplotlib.pylab
-j=random.randint(0,20)
+j=random.randint(0,1000)
 PREDICTION_LEN=25
 tl=list(range(j,j+PREDICTION_LEN+SEQ_LEN))
 dt=[[math.sin(e*0.25)] for e in tl]
