@@ -415,7 +415,6 @@ rnn=RNN("rnn-save.rnn",1,25,1,0.01)
 n_epoch=20
 for j in range(n_epoch):
 	for i in range(N_SEQ):
-		print(j*N_SEQ+i)
 		rnn.train(DATA[i][:SEQ_LEN],DATA[i][1:])
 rnn.save()
 ####################################################################################################################
