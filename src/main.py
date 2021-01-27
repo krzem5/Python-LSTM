@@ -1,6 +1,6 @@
 import array
 import math
-import ntpath
+import os
 import random
 
 
@@ -367,7 +367,7 @@ class LSTMLayer:
 class RNN:
 	def __init__(self,fp,i,h,o,lr):
 		self.fp=fp
-		if (ntpath.exists(self.fp)):
+		if (os.path.exists(self.fp)):
 			with open(self.fp,"rb") as f:
 				self.lstm=LSTMLayer(i,h,f)
 				self.fc=FullyConnectedLayer(h,o,f)
@@ -417,16 +417,3 @@ for j in range(n_epoch):
 	for i in range(N_SEQ):
 		rnn.train(DATA[i][:SEQ_LEN],DATA[i][1:])
 rnn.save()
-####################################################################################################################
-import matplotlib.pylab
-j=random.randint(0,1000)
-PREDICTION_LEN=25
-tl=list(range(j,j+PREDICTION_LEN+SEQ_LEN))
-dt=[[math.sin(e*0.25)] for e in tl]
-o=[]
-for i in range(0,PREDICTION_LEN):
-	o+=[rnn.predict(dt[i:i+SEQ_LEN])[0]]
-matplotlib.pylab.plot(tl,dt,":k")
-matplotlib.pylab.plot(tl,dt,"og")
-matplotlib.pylab.plot(tl[SEQ_LEN:],o,"-b")
-matplotlib.pylab.show()
