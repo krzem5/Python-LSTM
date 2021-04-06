@@ -8,7 +8,7 @@ import random
 def malloc(sz):
 	return [None for _ in range(0,sz)]
 def realloc(a,sz):
-	if (a==None):
+	if (a is None):
 		return malloc(sz)
 	assert sz==len(a)+1
 	return a+[None]
