@@ -413,7 +413,7 @@ SEQ_LEN=20
 N_EPOCH=20
 DATA=[[[math.sin((i+j)*0.25)] for j in range(0,SEQ_LEN+1)] for i in range(0,N_SEQ)]
 rnn=RNN("rnn-save.rnn",1,25,1,0.01)
-for j in range(N_EPOCH):
+for _ in range(N_EPOCH):
 	for i in range(N_SEQ):
 		rnn.train(DATA[i][:SEQ_LEN],DATA[i][1:])
 rnn.save()
